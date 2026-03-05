@@ -1,50 +1,93 @@
-# Welcome to your Expo app 👋
+# demo_
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Audio demo player built with Expo + React Native (web, iOS, Android).
 
-## Get started
+## Live
+
+- GitHub Pages: `https://rizramen.github.io/demo_/`
+
+## Features
+
+- Play/pause
+- Skip `-15s` / `+15s`
+- Seek slider
+- Responsive layout for desktop and mobile
+- Track list with newest files on top
+- Dynamic track manifest generated from `assets/demo_tracks`
+
+## How Tracks Work
+
+Drop audio files into:
+
+`assets/demo_tracks`
+
+Supported formats:
+
+- `.mp3`
+- `.wav`
+- `.m4a`
+- `.aac`
+- `.ogg`
+- `.flac`
+
+Then generate/refresh the track list:
+
+```bash
+npm run refresh:tracks
+```
+
+The app reads from the generated manifest:
+
+`src/data/tracks.generated.ts`
+
+## Development
 
 1. Install dependencies
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Start app
 
-## Learn more
+```bash
+npm start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Useful scripts:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `npm run generate:tracks` generate manifest from audio files
+- `npm run refresh:tracks` alias for generate
+- `npm run ios` run on iOS simulator
+- `npm run android` run on Android emulator
+- `npm run web` run on web
+- `npm run lint` run lint checks
 
-## Join the community
+## Deploy to GitHub Pages
 
-Join our community of developers creating universal apps.
+1. Build static web output
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run predeploy
+```
+
+2. Deploy to `gh-pages`
+
+```bash
+npm run deploy
+```
+
+Required once:
+
+```bash
+npm i -D gh-pages
+```
+
+## Project Structure
+
+- `app/(tabs)/index.tsx` main player screen
+- `scripts/generate-tracks-manifest.js` scans `assets/demo_tracks`
+- `src/services/tracks.service.ts` loads and sorts tracks
+- `src/hooks/useTracks.ts` track loading hook
+- `src/hooks/useAudioTrackPlayer.ts` audio player hook
+- `src/data/tracks.generated.ts` generated track manifest
