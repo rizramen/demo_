@@ -3,10 +3,11 @@ const path = require("path");
 
 const SUPPORTED_EXTENSIONS = new Set([".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac"]);
 
-function toTrackId(filename) {
-  const base = filename.replace(/\.[^/.]+$/, "");
+function toTrackId(relativePath) {
+  const base = relativePath.replace(/\.[^/.]+$/, "");
   const id = base
     .toLowerCase()
+    .replace(/[\\/]+/g, "-")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
@@ -17,29 +18,46 @@ function jsString(value) {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+async function collectAudioFiles(rootDir, currentDir = rootDir) {
+  const entries = await fs.readdir(currentDir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
+    const fullPath = path.join(currentDir, entry.name);
+
+    if (entry.isDirectory()) {
+      const nestedFiles = await collectAudioFiles(rootDir, fullPath);
+      files.push(...nestedFiles);
+      continue;
+    }
+
+    if (!entry.isFile()) continue;
+    if (!SUPPORTED_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
+
+    const stats = await fs.stat(fullPath);
+    const relativePath = path.relative(rootDir, fullPath);
+    const normalizedPath = relativePath.split(path.sep).join("/");
+    const pathSegments = normalizedPath.toLowerCase().split("/");
+    const section = pathSegments.includes("archive") ? "archive" : "vault";
+
+    files.push({
+      id: toTrackId(normalizedPath),
+      filename: entry.name,
+      relativePath: normalizedPath,
+      section,
+      createdAt: stats.mtime.toISOString(),
+    });
+  }
+
+  return files;
+}
+
 async function generateTracksManifest() {
   const projectRoot = path.resolve(__dirname, "..");
   const tracksDir = path.join(projectRoot, "assets", "demo_tracks");
   const outputPath = path.join(projectRoot, "src", "data", "tracks.generated.ts");
-
-  const dirEntries = await fs.readdir(tracksDir, { withFileTypes: true });
-
-  const fileEntries = await Promise.all(
-    dirEntries
-      .filter((entry) => entry.isFile())
-      .filter((entry) => !entry.name.startsWith("."))
-      .filter((entry) => SUPPORTED_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
-      .map(async (entry) => {
-        const fullPath = path.join(tracksDir, entry.name);
-        const stats = await fs.stat(fullPath);
-
-        return {
-          filename: entry.name,
-          createdAt: stats.mtime.toISOString(),
-          id: toTrackId(entry.name),
-        };
-      })
-  );
+  const fileEntries = await collectAudioFiles(tracksDir);
 
   fileEntries.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 
@@ -52,7 +70,8 @@ async function generateTracksManifest() {
     lines.push("  {");
     lines.push(`    id: "${jsString(entry.id)}",`);
     lines.push(`    filename: "${jsString(entry.filename)}",`);
-    lines.push(`    source: require("../../assets/demo_tracks/${jsString(entry.filename)}"),`);
+    lines.push(`    section: "${entry.section}",`);
+    lines.push(`    source: require("../../assets/demo_tracks/${jsString(entry.relativePath)}"),`);
     lines.push(`    createdAt: "${entry.createdAt}",`);
     lines.push("  },");
   }
