@@ -6,7 +6,7 @@ import { ResizeMode, Video } from 'expo-av';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import 'react-native-reanimated';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -54,31 +54,6 @@ export default function RootLayout() {
 
     setErrorText('Wrong password');
   };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const relock = () => {
-      setIsUnlocked(false);
-      setPasswordInput('');
-      setErrorText('');
-    };
-
-    const onPageShow = () => relock();
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        relock();
-      }
-    };
-
-    window.addEventListener('pageshow', onPageShow);
-    document.addEventListener('visibilitychange', onVisibilityChange);
-
-    return () => {
-      window.removeEventListener('pageshow', onPageShow);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-    };
-  }, []);
 
   if (!fontsLoaded) {
     return null;

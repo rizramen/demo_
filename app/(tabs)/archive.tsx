@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
@@ -8,6 +8,7 @@ import { useTabVisibility } from "@/src/context/tab-visibility-context";
 
 import { useAudioTrackPlayer } from "@/src/hooks/useAudioTrackPlayer";
 import { useTracks } from "@/src/hooks/useTracks";
+import { getTrackDownloadUrl } from "@/src/utils/track-download-url";
 
 type SortMode = "newest" | "alphabetical";
 
@@ -91,7 +92,7 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!isActiveScreen || typeof window === "undefined") return;
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.code !== "Space") return;
@@ -106,7 +107,7 @@ export default function HomeScreen() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [togglePlayPause]);
+  }, [isActiveScreen, togglePlayPause]);
 
   if (!isActiveScreen) {
     return <View style={styles.inactiveScreen} pointerEvents="none" />;
@@ -201,8 +202,23 @@ export default function HomeScreen() {
               style={[styles.trackItem, isSelected && styles.trackItemSelected]}
               onPress={() => setSelectedTrackId(track.id)}
             >
-              <Text style={styles.trackItemTitle}>{track.title}</Text>
-              <Text style={styles.trackItemMeta}>{new Date(track.createdAt).toLocaleString()}</Text>
+              <View style={styles.trackItemTopRow}>
+                <View style={styles.trackItemInfo}>
+                  <Text style={styles.trackItemTitle}>{track.title}</Text>
+                  <Text style={styles.trackItemMeta}>{new Date(track.createdAt).toLocaleString()}</Text>
+                </View>
+                <Pressable
+                  style={styles.downloadButton}
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    const downloadUrl = getTrackDownloadUrl(track);
+                    if (!downloadUrl) return;
+                    void Linking.openURL(downloadUrl);
+                  }}
+                >
+                  <Text style={styles.downloadButtonText}>Download</Text>
+                </Pressable>
+              </View>
             </Pressable>
           );
         })}
@@ -279,12 +295,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: "rgba(255,255,255,0.16)",
   },
+  trackItemTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  trackItemInfo: {
+    flex: 1,
+  },
   trackItemSelected: {
     borderColor: "rgba(255,255,255,0.8)",
     backgroundColor: "rgba(255,255,255,0.28)",
   },
   trackItemTitle: { fontSize: 14, fontWeight: "600", color: "#fff" },
   trackItemMeta: { fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 2 },
+  downloadButton: {
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  downloadButtonText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   inactiveScreen: {
     flex: 1,
   },
