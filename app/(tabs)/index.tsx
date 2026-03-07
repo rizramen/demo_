@@ -28,6 +28,7 @@ export default function HomeScreen() {
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
 
   const sortedTracks = useMemo(() => {
+    // Always sort a copy so we never mutate React state arrays in place.
     const nextTracks = [...tracks];
 
     if (sortMode === "alphabetical") {
@@ -45,6 +46,7 @@ export default function HomeScreen() {
       return;
     }
 
+    // Preserve the user's selection after re-sorts; otherwise default to the first track.
     setSelectedTrackId((previousId) => {
       if (previousId && sortedTracks.some((track) => track.id === previousId)) {
         return previousId;
@@ -105,11 +107,13 @@ export default function HomeScreen() {
       togglePlayPause();
     }
 
+    // Web-only keyboard shortcut for play/pause.
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isActiveScreen, togglePlayPause]);
 
   if (!isActiveScreen) {
+    // Avoid rendering interactive controls while this tab is inactive.
     return <View style={styles.inactiveScreen} pointerEvents="none" />;
   }
 

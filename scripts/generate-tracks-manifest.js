@@ -4,6 +4,7 @@ const path = require("path");
 const SUPPORTED_EXTENSIONS = new Set([".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac"]);
 
 function toTrackId(relativePath) {
+  // Derive a stable, URL-friendly id from the relative file path.
   const base = relativePath.replace(/\.[^/.]+$/, "");
   const id = base
     .toLowerCase()
@@ -27,6 +28,7 @@ async function collectAudioFiles(rootDir, currentDir = rootDir) {
     const fullPath = path.join(currentDir, entry.name);
 
     if (entry.isDirectory()) {
+      // Recurse through nested folders (including ARCHIVE).
       const nestedFiles = await collectAudioFiles(rootDir, fullPath);
       files.push(...nestedFiles);
       continue;
@@ -39,6 +41,7 @@ async function collectAudioFiles(rootDir, currentDir = rootDir) {
     const relativePath = path.relative(rootDir, fullPath);
     const normalizedPath = relativePath.split(path.sep).join("/");
     const pathSegments = normalizedPath.toLowerCase().split("/");
+    // Infer the section directly from folder structure to avoid manual metadata.
     const section = pathSegments.includes("archive") ? "archive" : "vault";
 
     files.push({
@@ -59,6 +62,7 @@ async function generateTracksManifest() {
   const outputPath = path.join(projectRoot, "src", "data", "tracks.generated.ts");
   const fileEntries = await collectAudioFiles(tracksDir);
 
+  // Keep newest files first to match the default in-app ordering.
   fileEntries.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 
   const lines = [];

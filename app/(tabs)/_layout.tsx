@@ -23,6 +23,7 @@ export default function TabLayout() {
   return (
     <TabVisibilityProvider
       value={{
+        // Screens use this signal to stop playback when they are not meant to render audio.
         isVisible: (section) => visibleBySection[section],
       }}>
       <Tabs
@@ -48,6 +49,7 @@ export default function TabLayout() {
           }}
           listeners={() => ({
             tabPress: () => {
+              // Ensure the tab becomes active even after a previous unmount cycle.
               setSectionVisibility('vault', true);
             },
           })}
@@ -60,6 +62,7 @@ export default function TabLayout() {
           }}
           listeners={() => ({
             tabPress: () => {
+              // Ensure the tab becomes active even after a previous unmount cycle.
               setSectionVisibility('archive', true);
             },
           })}

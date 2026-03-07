@@ -1,12 +1,12 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { ResizeMode, Video } from 'expo-av';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import 'react-native-reanimated';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -16,6 +16,11 @@ export const unstable_settings = {
 
 const ACCESS_PASSWORD = 'demonhug';
 const BACKGROUND_VIDEO_SOURCE = require('../assets/videos/poison ivy.mov');
+
+// Keep splash visible until icon fonts are ready, otherwise icon glyphs can fail on first paint.
+void SplashScreen.preventAutoHideAsync().catch(() => {
+  // Ignore: this can throw when called more than once in development.
+});
 
 const transparentTheme = {
   ...DefaultTheme,
@@ -37,15 +42,29 @@ const transparentDarkTheme = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [fontsLoaded] = useFonts({
-    ...Ionicons.font,
-    ...MaterialIcons.font,
+  const [fontsLoaded, fontsError] = useFonts({
+    // Only preload icon packs used in this app.
+    ionicons: require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
+    'Material Icons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
   });
   const [passwordInput, setPasswordInput] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [errorText, setErrorText] = useState('');
 
+  useEffect(() => {
+    if (fontsLoaded || fontsError) {
+      void SplashScreen.hideAsync().catch(() => {
+        // Ignore hide errors so rendering can continue.
+      });
+    }
+  }, [fontsError, fontsLoaded]);
+
+  if (fontsError) {
+    throw fontsError;
+  }
+
   const handleUnlock = () => {
+    // Keep auth intentionally local/client-side; this is a UI gate, not secure auth.
     if (passwordInput === ACCESS_PASSWORD) {
       setIsUnlocked(true);
       setErrorText('');
@@ -106,6 +125,7 @@ export default function RootLayout() {
       />
       <View style={styles.backgroundShade} />
       <View style={styles.contentLayer}>
+        {/* Transparent navigation theme lets the background video stay visible behind tabs. */}
         <ThemeProvider value={colorScheme === 'dark' ? transparentDarkTheme : transparentTheme}>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

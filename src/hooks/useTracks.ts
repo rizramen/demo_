@@ -10,6 +10,7 @@ export function useTracks(section?: TrackSection) {
   const refresh = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Use the section-specific query when provided, otherwise load everything.
       const nextTracks = section ? await listTracksBySection(section) : await listTracks();
       setTracks(nextTracks);
     } finally {

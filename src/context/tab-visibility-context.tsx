@@ -21,6 +21,7 @@ export function TabVisibilityProvider({
 export function useTabVisibility(section: SectionKey) {
   const context = useContext(TabVisibilityContext);
   if (!context) {
+    // Default to visible in tests/standalone renders without a provider.
     return true;
   }
 
