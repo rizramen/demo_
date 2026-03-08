@@ -2,12 +2,9 @@ import { Tabs } from 'expo-router';
 import React, { useState } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
 import { TabVisibilityProvider } from '@/src/context/tab-visibility-context';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const [visibleBySection, setVisibleBySection] = useState({
     vault: true,
     archive: true,
@@ -28,18 +25,20 @@ export default function TabLayout() {
       }}>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          tabBarActiveTintColor: '#ffffff',
           headerShown: false,
           tabBarButton: HapticTab,
           animation: 'none',
           lazy: true,
           sceneStyle: { backgroundColor: 'transparent' },
           tabBarStyle: {
-            backgroundColor: 'rgba(0,0,0,0.35)',
-            borderTopColor: 'rgba(255,255,255,0.2)',
+            backgroundColor: 'rgba(255,255,255,0.14)',
+            borderTopColor: 'rgba(255,255,255,0.35)',
+            borderTopWidth: 1,
             position: 'absolute',
+            elevation: 0,
           },
-          tabBarInactiveTintColor: '#d6d6d6',
+          tabBarInactiveTintColor: 'rgba(255,255,255,0.82)',
         }}>
         <Tabs.Screen
           name="index"

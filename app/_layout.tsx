@@ -7,8 +7,10 @@ import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import 'react-native-reanimated';
 import { useEffect, useState } from 'react';
+import '../global.css';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Crosshair } from '@/components/crosshair';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -71,7 +73,7 @@ export default function RootLayout() {
       return;
     }
 
-    setErrorText('Wrong password');
+    setErrorText('Are you supposed to be here?');
   };
 
   if (!fontsLoaded) {
@@ -90,8 +92,9 @@ export default function RootLayout() {
           isMuted
         />
         <View style={styles.backgroundShade} />
+        <Crosshair />
         <View style={styles.lockContainer}>
-          <Text style={styles.lockTitle}>rizramen&apos;s vault</Text>
+          <Text style={styles.lockTitle}>rizramen's vault</Text>
           <Text style={styles.lockSubtitle}>Enter password to continue</Text>
           <TextInput
             style={styles.passwordInput}
@@ -124,6 +127,7 @@ export default function RootLayout() {
         isMuted
       />
       <View style={styles.backgroundShade} />
+      <Crosshair />
       <View style={styles.contentLayer}>
         {/* Transparent navigation theme lets the background video stay visible behind tabs. */}
         <ThemeProvider value={colorScheme === 'dark' ? transparentDarkTheme : transparentTheme}>
@@ -162,12 +166,13 @@ const styles = StyleSheet.create({
   lockTitle: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'dystropiax',
     color: '#fff',
     marginBottom: 6,
   },
   lockSubtitle: {
     fontSize: 14,
-    color: '#f2f2f2',
+    color: '#ffffff',
     marginBottom: 16,
   },
   passwordInput: {

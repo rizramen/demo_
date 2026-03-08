@@ -2,6 +2,20 @@ import type { TrackSeed } from "@/src/types/track";
 
 export const GENERATED_TRACKS: TrackSeed[] = [
   {
+    id: "lime-elisa-2026",
+    filename: "lime elisa 2026.mp3",
+    section: "vault",
+    source: require("../../assets/demo_tracks/lime elisa 2026.mp3"),
+    createdAt: "2026-03-08T00:58:43.404Z",
+  },
+  {
+    id: "niskala-2026",
+    filename: "niskala 2026.mp3",
+    section: "vault",
+    source: require("../../assets/demo_tracks/niskala 2026.mp3"),
+    createdAt: "2026-03-07T23:21:43.060Z",
+  },
+  {
     id: "bands",
     filename: "bands.mp3",
     section: "vault",
@@ -63,13 +77,6 @@ export const GENERATED_TRACKS: TrackSeed[] = [
     section: "vault",
     source: require("../../assets/demo_tracks/runnn no drums jan.mp3"),
     createdAt: "2026-01-09T01:02:58.031Z",
-  },
-  {
-    id: "niskala-birthday",
-    filename: "niskala birthday.wav",
-    section: "vault",
-    source: require("../../assets/demo_tracks/niskala birthday.wav"),
-    createdAt: "2025-11-25T12:40:58.140Z",
   },
   {
     id: "keris-final-555",

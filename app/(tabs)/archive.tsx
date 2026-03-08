@@ -1,6 +1,5 @@
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Slider from "@react-native-community/slider";
-import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -11,6 +10,14 @@ import { useTracks } from "@/src/hooks/useTracks";
 import { getTrackDownloadUrl } from "@/src/utils/track-download-url";
 
 type SortMode = "newest" | "alphabetical";
+
+const PLAY_ICON = require("../../assets/images/controls/play.png");
+const PAUSE_ICON = require("../../assets/images/controls/pause.png");
+const SKIP_BACK_ICON = require("../../assets/images/controls/skip-back.png");
+const SKIP_FORWARD_ICON = require("../../assets/images/controls/skip-forward.png");
+const INSTAGRAM_ICON = require("../../assets/images/instaTransparentIcon.png");
+const SOUNDCLOUD_ICON = require("../../assets/images/soundcloudIconNoText.png");
+const SPOTIFY_ICON = require("../../assets/images/spotifyIcon.png");
 
 function formatTime(seconds: number) {
   const totalSeconds = Math.floor(seconds);
@@ -119,32 +126,52 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>archive</Text>
+      <Text style={styles.title}>Archive</Text>
       <Text style={styles.subtitle}>
-        {isLoading ? "Loading track..." : currentTrack?.title ?? "No demo track found"}
+        {isLoading ? "Loading track..." : currentTrack?.title ? `"${currentTrack.title}"` : "No demo track found"}
       </Text>
+      <View style={styles.socialCornerRow}>
+        <Pressable onPress={() => void Linking.openURL("https://instagram.com/rizramen")} style={styles.socialButton}>
+          <Image source={INSTAGRAM_ICON} style={styles.socialIcon} resizeMode="contain" />
+        </Pressable>
+        <Pressable onPress={() => void Linking.openURL("https://soundcloud.com/rizramen")} style={styles.socialButton}>
+          <Image source={SOUNDCLOUD_ICON} style={styles.socialIcon} resizeMode="contain" />
+        </Pressable>
+        <Pressable
+          onPress={() =>
+            void Linking.openURL(
+              "https://open.spotify.com/artist/6cAAufcMkqQsx46dOM9a1B?si=fHjEl-teSG2tixF8QEsCbA"
+            )
+          }
+          style={[styles.socialButton, styles.spotifyButtonSpacing]}
+        >
+          <Image source={SPOTIFY_ICON} style={styles.socialIcon} resizeMode="contain" />
+        </Pressable>
+      </View>
 
       <View style={styles.controlsRow}>
         <Pressable
-          style={styles.iconButton}
+          style={[styles.iconButton, (!currentTrack || isLoading) && styles.disabledButton]}
           onPress={() => seekBy(-15)}
           disabled={!currentTrack || isLoading}
         >
-          <Ionicons name="play-back" size={30} color="#fff" />
-          <Text style={styles.skipLabel}>15s</Text>
-        </Pressable>
-
-        <Pressable style={styles.iconButton} onPress={togglePlayPause} disabled={!currentTrack || isLoading}>
-          <Ionicons name={status?.playing ? "pause" : "play"} size={48} color="#fff" />
+          <Image source={SKIP_BACK_ICON} style={styles.controlIcon} resizeMode="contain" />
         </Pressable>
 
         <Pressable
-          style={styles.iconButton}
+          style={[styles.iconButton, (!currentTrack || isLoading) && styles.disabledButton]}
+          onPress={togglePlayPause}
+          disabled={!currentTrack || isLoading}
+        >
+          <Image source={status?.playing ? PAUSE_ICON : PLAY_ICON} style={styles.playControlIcon} resizeMode="contain" />
+        </Pressable>
+
+        <Pressable
+          style={[styles.iconButton, (!currentTrack || isLoading) && styles.disabledButton]}
           onPress={() => seekBy(15)}
           disabled={!currentTrack || isLoading}
         >
-          <Ionicons name="play-forward" size={30} color="#fff" />
-          <Text style={styles.skipLabel}>15s</Text>
+          <Image source={SKIP_FORWARD_ICON} style={styles.controlIcon} resizeMode="contain" />
         </Pressable>
       </View>
 
@@ -208,7 +235,7 @@ export default function HomeScreen() {
             >
               <View style={styles.trackItemTopRow}>
                 <View style={styles.trackItemInfo}>
-                  <Text style={styles.trackItemTitle}>{track.title}</Text>
+                  <Text style={styles.trackItemTitle}>{`"${track.title}"`}</Text>
                   <Text style={styles.trackItemMeta}>{new Date(track.createdAt).toLocaleString()}</Text>
                 </View>
                 <Pressable
@@ -241,8 +268,23 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingBottom: 24,
   },
-  title: { fontSize: 22, fontWeight: "700", color: '#ffffff', marginBottom: 18 },
-  subtitle: { color: "#fff", marginBottom: 8 },
+  title: { fontSize: 22, fontWeight: "700", color: '#ffffff', marginBottom: 18, fontFamily: "clarendon" },
+  subtitle: {
+    color: "#ffffff",
+    marginBottom: 8,
+  },
+  socialCornerRow: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    zIndex: 10,
+  },
+  socialButton: { borderRadius: 999, overflow: "hidden" },
+  spotifyButtonSpacing: { marginLeft: 2 },
+  socialIcon: { width: 26, height: 26 },
   controlsRow: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 },
   iconButton: {
     paddingVertical: 8,
@@ -250,7 +292,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
   },
-  skipLabel: { fontSize: 12, color: "#fff" },
+  disabledButton: { opacity: 0.45 },
+  controlIcon: { width: 30, height: 30 },
+  playControlIcon: { width: 48, height: 48 },
   progressRow: {
     width: "100%",
     maxWidth: 520,
@@ -312,7 +356,11 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.8)",
     backgroundColor: "rgba(255,255,255,0.28)",
   },
-  trackItemTitle: { fontSize: 14, fontWeight: "600", color: "#fff" },
+  trackItemTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#ffffff",
+  },
   trackItemMeta: { fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 2 },
   downloadButton: {
     borderWidth: 1,
