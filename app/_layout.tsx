@@ -35,35 +35,17 @@ const transparentDarkTheme = {
   },
 };
 
-function BackgroundVideoField({
-  viewportWidth,
-  viewportHeight,
-}: {
-  viewportWidth: number;
-  viewportHeight: number;
-}) {
-  const aspectRatio = viewportHeight / Math.max(viewportWidth, 1);
-  // Taller screens get more vertical stretch so the bottom is always filled.
-  const verticalStretch = Math.min(1.7, Math.max(1.08, 1 + Math.max(0, aspectRatio - 1.45) * 0.55));
-  const stretchedHeight = viewportHeight * verticalStretch;
-
+function BackgroundVideo() {
   return (
-    <View style={styles.backgroundVideoField} pointerEvents="none">
+    <View style={styles.backgroundVideoLayer} pointerEvents="none">
       <Video
         source={BACKGROUND_VIDEO_SOURCE}
-        style={[styles.backgroundVideoTile, { top: 0, height: stretchedHeight }]}
-        resizeMode={ResizeMode.COVER}
+        style={styles.backgroundVideo}
+        resizeMode={ResizeMode.STRETCH}
         shouldPlay
         isLooping
         isMuted
-      />
-      <Video
-        source={BACKGROUND_VIDEO_SOURCE}
-        style={[styles.backgroundVideoTile, { top: stretchedHeight - 1, height: stretchedHeight }]}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isLooping
-        isMuted
+        useNativeControls={false}
       />
     </View>
   );
@@ -71,10 +53,12 @@ function BackgroundVideoField({
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const [passwordInput, setPasswordInput] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [errorText, setErrorText] = useState('');
+  const isPhone = width < 768;
+  const isNarrowPhone = width < 420;
 
   const handleUnlock = () => {
     // Keep auth intentionally local/client-side; this is a UI gate, not secure auth.
@@ -90,14 +74,14 @@ export default function RootLayout() {
   if (!isUnlocked) {
     return (
       <View style={styles.root}>
-        <BackgroundVideoField viewportWidth={width} viewportHeight={height} />
+        <BackgroundVideo />
         <View style={styles.backgroundShade} />
         <Crosshair />
-        <View style={styles.lockContainer}>
-          <Text style={styles.lockTitle}>rizramen&apos;s vault</Text>
-          <Text style={styles.lockSubtitle}>Enter password to continue</Text>
+        <View style={[styles.lockContainer, isPhone && styles.lockContainerPhone]}>
+          <Text style={[styles.lockTitle, isPhone && styles.lockTitlePhone]}>rizramen&apos;s vault</Text>
+          <Text style={[styles.lockSubtitle, isPhone && styles.lockSubtitlePhone]}>Enter password to continue</Text>
           <TextInput
-            style={styles.passwordInput}
+            style={[styles.passwordInput, isPhone && styles.passwordInputPhone]}
             value={passwordInput}
             onChangeText={setPasswordInput}
             placeholder="Password"
@@ -108,8 +92,8 @@ export default function RootLayout() {
             onSubmitEditing={handleUnlock}
           />
           {!!errorText && <Text style={styles.errorText}>{errorText}</Text>}
-          <Pressable style={styles.unlockButton} onPress={handleUnlock}>
-            <Text style={styles.unlockButtonText}>Unlock</Text>
+          <Pressable style={[styles.unlockButton, isNarrowPhone && styles.unlockButtonPhone]} onPress={handleUnlock}>
+            <Text style={[styles.unlockButtonText, isNarrowPhone && styles.unlockButtonTextPhone]}>Unlock</Text>
           </Pressable>
         </View>
       </View>
@@ -118,7 +102,7 @@ export default function RootLayout() {
 
   return (
     <View style={styles.root}>
-      <BackgroundVideoField viewportWidth={width} viewportHeight={height} />
+      <BackgroundVideo />
       <View style={styles.backgroundShade} />
       <Crosshair />
       <View style={styles.contentLayer}>
@@ -140,14 +124,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  backgroundVideoField: {
+  backgroundVideoLayer: {
     ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
   },
-  backgroundVideoTile: {
+  backgroundVideo: {
     position: 'absolute',
+    top: 0,
     left: 0,
     width: '100%',
+    height: '100%',
+    alignSelf: 'center',
   },
   backgroundShade: {
     ...StyleSheet.absoluteFillObject,
@@ -162,6 +148,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
+  lockContainerPhone: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
   lockTitle: {
     fontSize: 24,
     fontWeight: '700',
@@ -169,10 +159,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 6,
   },
+  lockTitlePhone: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
   lockSubtitle: {
     fontSize: 14,
     color: '#ffffff',
     marginBottom: 16,
+  },
+  lockSubtitlePhone: {
+    fontSize: 13,
+    marginBottom: 12,
   },
   passwordInput: {
     width: '100%',
@@ -186,6 +184,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     backgroundColor: 'rgba(0,0,0,0.3)',
   },
+  passwordInputPhone: {
+    maxWidth: 360,
+    paddingVertical: 9,
+  },
   errorText: {
     color: '#ff8585',
     marginBottom: 10,
@@ -198,8 +200,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
+  unlockButtonPhone: {
+    width: '100%',
+    maxWidth: 220,
+    alignItems: 'center',
+  },
   unlockButtonText: {
     color: '#ffffff',
     fontWeight: '600',
+  },
+  unlockButtonTextPhone: {
+    fontSize: 13,
   },
 });
