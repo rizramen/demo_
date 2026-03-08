@@ -345,12 +345,13 @@ const styles = StyleSheet.create({
   },
   trackItemTopRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
     justifyContent: "space-between",
     gap: 10,
   },
   trackItemInfo: {
     flex: 1,
+    justifyContent: "center",
   },
   trackItemSelected: {
     borderColor: "rgba(255,255,255,0.8)",
@@ -369,6 +370,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     backgroundColor: "rgba(255,255,255,0.18)",
+    alignSelf: "stretch",
+    justifyContent: "center",
+    minWidth: 92,
   },
   downloadButtonText: {
     color: "#fff",

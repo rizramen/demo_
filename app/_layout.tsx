@@ -1,12 +1,10 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { ResizeMode, Video } from 'expo-av';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import 'react-native-reanimated';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import '../global.css';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -18,11 +16,6 @@ export const unstable_settings = {
 
 const ACCESS_PASSWORD = 'demonhug';
 const BACKGROUND_VIDEO_SOURCE = require('../assets/videos/poison ivy.mov');
-
-// Keep splash visible until icon fonts are ready, otherwise icon glyphs can fail on first paint.
-void SplashScreen.preventAutoHideAsync().catch(() => {
-  // Ignore: this can throw when called more than once in development.
-});
 
 const transparentTheme = {
   ...DefaultTheme,
@@ -42,28 +35,46 @@ const transparentDarkTheme = {
   },
 };
 
+function BackgroundVideoField({
+  viewportWidth,
+  viewportHeight,
+}: {
+  viewportWidth: number;
+  viewportHeight: number;
+}) {
+  const aspectRatio = viewportHeight / Math.max(viewportWidth, 1);
+  // Taller screens get more vertical stretch so the bottom is always filled.
+  const verticalStretch = Math.min(1.7, Math.max(1.08, 1 + Math.max(0, aspectRatio - 1.45) * 0.55));
+  const stretchedHeight = viewportHeight * verticalStretch;
+
+  return (
+    <View style={styles.backgroundVideoField} pointerEvents="none">
+      <Video
+        source={BACKGROUND_VIDEO_SOURCE}
+        style={[styles.backgroundVideoTile, { top: 0, height: stretchedHeight }]}
+        resizeMode={ResizeMode.COVER}
+        shouldPlay
+        isLooping
+        isMuted
+      />
+      <Video
+        source={BACKGROUND_VIDEO_SOURCE}
+        style={[styles.backgroundVideoTile, { top: stretchedHeight - 1, height: stretchedHeight }]}
+        resizeMode={ResizeMode.COVER}
+        shouldPlay
+        isLooping
+        isMuted
+      />
+    </View>
+  );
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [fontsLoaded, fontsError] = useFonts({
-    // Only preload icon packs used in this app.
-    ionicons: require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
-    'Material Icons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
-  });
+  const { width, height } = useWindowDimensions();
   const [passwordInput, setPasswordInput] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [errorText, setErrorText] = useState('');
-
-  useEffect(() => {
-    if (fontsLoaded || fontsError) {
-      void SplashScreen.hideAsync().catch(() => {
-        // Ignore hide errors so rendering can continue.
-      });
-    }
-  }, [fontsError, fontsLoaded]);
-
-  if (fontsError) {
-    throw fontsError;
-  }
 
   const handleUnlock = () => {
     // Keep auth intentionally local/client-side; this is a UI gate, not secure auth.
@@ -76,25 +87,14 @@ export default function RootLayout() {
     setErrorText('Are you supposed to be here?');
   };
 
-  if (!fontsLoaded) {
-    return null;
-  }
-
   if (!isUnlocked) {
     return (
       <View style={styles.root}>
-        <Video
-          source={BACKGROUND_VIDEO_SOURCE}
-          style={styles.backgroundVideo}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted
-        />
+        <BackgroundVideoField viewportWidth={width} viewportHeight={height} />
         <View style={styles.backgroundShade} />
         <Crosshair />
         <View style={styles.lockContainer}>
-          <Text style={styles.lockTitle}>rizramen's vault</Text>
+          <Text style={styles.lockTitle}>rizramen&apos;s vault</Text>
           <Text style={styles.lockSubtitle}>Enter password to continue</Text>
           <TextInput
             style={styles.passwordInput}
@@ -118,14 +118,7 @@ export default function RootLayout() {
 
   return (
     <View style={styles.root}>
-      <Video
-        source={BACKGROUND_VIDEO_SOURCE}
-        style={styles.backgroundVideo}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isLooping
-        isMuted
-      />
+      <BackgroundVideoField viewportWidth={width} viewportHeight={height} />
       <View style={styles.backgroundShade} />
       <Crosshair />
       <View style={styles.contentLayer}>
@@ -147,8 +140,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  backgroundVideo: {
+  backgroundVideoField: {
     ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  backgroundVideoTile: {
+    position: 'absolute',
+    left: 0,
+    width: '100%',
   },
   backgroundShade: {
     ...StyleSheet.absoluteFillObject,
