@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-type SectionKey = "vault" | "archive";
+type SectionKey = "vault" | "archive" | "beats";
 
 type TabVisibilityContextValue = {
   isVisible: (section: SectionKey) => boolean;

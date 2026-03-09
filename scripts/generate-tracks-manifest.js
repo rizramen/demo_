@@ -42,7 +42,11 @@ async function collectAudioFiles(rootDir, currentDir = rootDir) {
     const normalizedPath = relativePath.split(path.sep).join("/");
     const pathSegments = normalizedPath.toLowerCase().split("/");
     // Infer the section directly from folder structure to avoid manual metadata.
-    const section = pathSegments.includes("archive") ? "archive" : "vault";
+    const section = pathSegments.includes("archive")
+      ? "archive"
+      : pathSegments.includes("beats")
+        ? "beats"
+        : "vault";
 
     files.push({
       id: toTrackId(normalizedPath),

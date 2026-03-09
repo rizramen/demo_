@@ -8,9 +8,10 @@ export default function TabLayout() {
   const [visibleBySection, setVisibleBySection] = useState({
     vault: true,
     archive: true,
+    beats: true,
   });
 
-  const setSectionVisibility = (section: 'vault' | 'archive', nextValue: boolean) => {
+  const setSectionVisibility = (section: 'vault' | 'archive' | 'beats', nextValue: boolean) => {
     setVisibleBySection((previous) => ({
       ...previous,
       [section]: nextValue,
@@ -63,6 +64,19 @@ export default function TabLayout() {
             tabPress: () => {
               // Ensure the tab becomes active even after a previous unmount cycle.
               setSectionVisibility('archive', true);
+            },
+          })}
+        />
+        <Tabs.Screen
+          name="beats"
+          options={{
+            title: 'Beats',
+            unmountOnBlur: true,
+          }}
+          listeners={() => ({
+            tabPress: () => {
+              // Ensure the tab becomes active even after a previous unmount cycle.
+              setSectionVisibility('beats', true);
             },
           })}
         />

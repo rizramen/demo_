@@ -1,6 +1,6 @@
 import type { AudioSource } from "expo-audio";
 
-export type TrackSection = "vault" | "archive";
+export type TrackSection = "vault" | "archive" | "beats";
 
 export type Track = {
   id: string;
